@@ -1,0 +1,65 @@
+---
+import type { success } from "astro:schema";
+import  CardLaunch from "./CardLaunch.astro";
+
+
+
+interface Launch {
+  id: string;
+  name: string;
+  date_utc: string;
+  success: boolean | null;
+  details: string | null;
+  links: {
+    patch: {
+      small: string | null;
+      large: string | null;
+    };
+    webcast: string | null;
+  };
+}
+
+let launches: Launch[] = [];
+let errorMessage = "";
+
+try {
+  const res = await fetch(
+    "https://gateway.pipeworx.io/spacex/v5/launches"
+  );
+
+  if (!res.ok) {
+    throw new Error(`Error HTTP: ${res.status}`);
+  }
+
+  launches = await res.json() as Launch[];
+} catch (error) {
+  console.error("Error al obtener lanzamientos:", error);
+  errorMessage = "No se pudieron cargar los lanzamientos.";
+}
+---
+
+<div class=" flex item-center justify-center p-10">
+   {errorMessage ? (
+        <p class="rounded-lg bg-red-950 p-4 text-red-200">
+            {errorMessage}
+        </p>
+    ):(
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {launches.map((launch)=>(
+                    <CardLaunch 
+                    name = {launch.name}
+                    details= {launch.details}
+                    success={launch.success}>
+
+                    </CardLaunch>
+
+                )
+            )}
+
+        </div>
+
+    )
+
+   }
+   
+</div>
